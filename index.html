@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HomeKeep">
+    <meta name="theme-color" content="#4A90D9">
+    <title>HomeKeep - Household Maintenance Tracker</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        /* CSS Variables - iOS-inspired color system */
+        :root {
+            --color-primary: #007AFF;
+            --color-primary-dark: #0056b3;
+            --color-success: #34C759;
+            --color-warning: #FF9500;
+            --color-danger: #FF3B30;
+            --color-purple: #AF52DE;
+            --color-teal: #00C7BE;
+            --color-gray: #8E8E93;
+            --color-gray-light: #F2F2F7;
+            --color-gray-dark: #3A3A3C;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F2F2F7;
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --border-color: #E5E5EA;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1C1C1E;
+                --bg-secondary: #2C2C2E;
+                --text-primary: #FFFFFF;
+                --text-secondary: #8E8E93;
+                --border-color: #38383A;
+                --color-gray-light: #2C2C2E;
+            }
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: calc(80px + var(--safe-area-bottom));
+            padding-top: var(--safe-area-top);
+        }
+
+        /* Navigation Header */
+        .nav-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            padding: 16px 20px;
+            padding-top: calc(16px + var(--safe-area-top));
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-gray-light);
+            color: var(--color-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-value.blue { color: var(--color-primary); }
+        .stat-value.green { color: var(--color-success); }
+        .stat-value.red { color: var(--color-danger); }
+        .stat-value.orange { color: var(--color-warning); }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 4px 0 16px;
+            margin-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            min-width: 80px;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .quick-action:hover {
+            transform: scale(1.05);
+        }
+
+        .quick-action-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .quick-action span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0 12px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .section-action {
+            color: var(--color-primary);
+            font-size: 15px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Category Cards */
+        .category-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .category-card:hover {
+            transform: translateX(4px);
+        }
+
+        .category-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .category-info {
+            flex: 1;
+        }
+
+        .category-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .category-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .category-progress {
+            text-align: right;
+        }
+
+        .category-progress-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--color-gray-light);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-success);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .category-chevron {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Task List */
+        .task-list {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            background: var(--color-gray-light);
+        }
+
+        .task-checkbox {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--color-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox.not-started { border-color: var(--color-gray); }
+        .task-checkbox.in-progress { 
+            border-color: var(--color-warning); 
+            background: linear-gradient(90deg, var(--color-warning) 50%, transparent 50%);
+        }
+        .task-checkbox.complete { 
+            border-color: var(--color-success); 
+            background: var(--color-success);
+            color: white;
+        }
+
+        .task-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-name {
+            font-weight: 500;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-name.complete {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .task-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .task-badge.overdue {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--color-danger);
+        }
+
+        .task-badge.due-soon {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--color-warning);
+        }
+
+        .task-badge.complete {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--color-success);
+        }
+
+        /* Avatar Stack */
+        .avatar-stack {
+            display: flex;
+            margin-left: 8px;
+        }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            border: 2px solid var(--bg-primary);
+            margin-left: -8px;
+        }
+
+        .avatar:first-child {
+            margin-left: 0;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(60px + var(--safe-area-bottom));
+            padding-bottom: var(--safe-area-bottom);
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+            z-index: 100;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+
+        .tab-item.active {
+            color: var(--color-primary);
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        .tab-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: calc(80px + var(--safe-area-bottom));
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 50;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.5);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-bottom: var(--safe-area-bottom);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-gray-light);
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Icon Picker */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+        }
+
+        .icon-option {
+            width: 40px;
+            height: 40px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            background: var(--color-gray-light);
+            transition: all 0.2s;
+        }
+
+        .icon-option.selected {
+            border-color: var(--color-primary);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        /* Color Picker */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option.selected {
+            border-color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* Calendar View */
+        .calendar-container {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-gray-light);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .calendar-month {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .calendar-weekday {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 8px 0;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: var(--color-gray-light);
+        }
+
+        .calendar-day.other-month {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .calendar-day.today {
+            background: var(--color-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected {
+            background: rgba(0, 122, 255, 0.2);
+        }
+
+        .calendar-day .task-dots {
+            position: absolute;
+            bottom: 4px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .task-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        /* Detail View */
+        .detail-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-secondary);
+            z-index: 150;
+            overflow-y: auto;
+        }
+
+        .detail-view.active {
+            display: block;
+        }
+
+        .detail-header {
+            background: var(--bg-primary);
+            padding: 16px 20px;
+            padding-top: calc(16px + var(--safe-area-top));
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-gray-light);
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--color-primary);
+        }
+
+        .detail-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .detail-content {
+            padding: 16px;
+            padding-bottom: calc(100px + var(--safe-area-bottom));
+        }
+
+        /* Page Views */
+        .page-view {
+            display: none;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        /* Settings */
+        .settings-section {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .settings-label {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .settings-value {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            width: 51px;
+            height: 31px;
+            background: var(--color-gray-light);
+            border-radius: 31px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle.active {
+            background: var(--color-success);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: calc(100px + var(--safe-area-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--color-gray-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Page -->
+    <div id="home-page" class="page-view active">
+        <header class="nav-header">
+            <h1>HomeKeep</h1>
+            <div class="nav-actions">
+                <button class="nav-btn" onclick="showSearch()">🔍</button>
+                <button class="nav-btn" onclick="exportData()">📤</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value blue" id="stat-total">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value green" id="stat-complete">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value red" id="stat-overdue">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value orange" id="stat-upcoming">0</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="quick-action" onclick="showAddCategory()">
+                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #AF52DE, #8E44AD);">📁</div>
+                    <span>Category</span>
+                </button>
+                <button class="quick-action" onclick="showAddItem()">
+                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #007AFF, #0056B3);">📦</div>
+                    <span>Item</span>
+                </button>
+                <button class="quick-action" onclick="showAddTask()">
+                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #34C759, #28A745);">✓</div>
+                    <span>Task</span>
+                </button>
+                <button class="quick-action" onclick="showAddLog()">
+                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #FF9500, #E67E00);">📝</div>
+                    <span>Log</span>
+                </button>
+            </div>
+
+            <!-- Categories -->
+            <div class="section-header">
+                <h2 class="section-title">Categories</h2>
+                <button class="section-action" onclick="showAddCategory()">Add New</button>
+            </div>
+            <div id="categories-list"></div>
+
+            <!-- Upcoming Tasks -->
+            <div class="section-header">
+                <h2 class="section-title">Upcoming Tasks</h2>
+            </div>
+            <div id="upcoming-tasks" class="task-list"></div>
+        </main>
+    </div>
+
+    <!-- Calendar Page -->
+    <div id="calendar-page" class="page-view">
+        <header class="nav-header">
+            <h1>Calendar</h1>
+        </header>
+        <main class="main-content">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)">◀</button>
+                        <button onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <div class="calendar-month" id="calendar-month"></div>
+                    <button class="section-action" onclick="goToToday()">Today</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">Sun</div>
+                    <div class="calendar-weekday">Mon</div>
+                    <div class="calendar-weekday">Tue</div>
+                    <div class="calendar-weekday">Wed</div>
+                    <div class="calendar-weekday">Thu</div>
+                    <div class="calendar-weekday">Fri</div>
+                    <div class="calendar-weekday">Sat</div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+            <div class="section-header">
+                <h2 class="section-title" id="selected-date-title">Upcoming</h2>
+            </div>
+            <div id="calendar-tasks" class="task-list"></div>
+        </main>
+    </div>
+
+    <!-- Family Page -->
+    <div id="family-page" class="page-view">
+        <header class="nav-header">
+            <h1>Family</h1>
+            <div class="nav-actions">
+                <button class="nav-btn" onclick="showAddMember()">+</button>
+            </div>
+        </header>
+        <main class="main-content">
+            <div class="section-header">
+                <h2 class="section-title">Family Members</h2>
+            </div>
+            <div id="family-members" class="stats-grid"></div>
+            
+            <div class="section-header">
+                <h2 class="section-title">Task Distribution</h2>
+            </div>
+            <div id="task-distribution" class="task-list"></div>
+        </main>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="settings-page" class="page-view">
+        <header class="nav-header">
+            <h1>Settings</h1>
+        </header>
+        <main class="main-content">
+            <div class="settings-section">
+                <div class="settings-item">
+                    <div class="settings-icon" style="background: #FF3B30;">🔔</div>
+                    <div class="settings-label">Push Notifications</div>
+                    <div class="toggle active" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-icon" style="background: #FF9500;">📅</div>
+                    <div class="settings-label">Calendar Reminders</div>
+                    <div class="toggle active" onclick="toggleSetting(this)"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-item" onclick="exportData()">
+                    <div class="settings-icon" style="background: #34C759;">📤</div>
+                    <div class="settings-label">Export to Excel</div>
+                    <span class="category-chevron">›</span>
+                </div>
+                <div class="settings-item" onclick="importData()">
+                    <div class="settings-icon" style="background: #007AFF;">📥</div>
+                    <div class="settings-label">Import Data</div>
+                    <span class="category-chevron">›</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-item">
+                    <div class="settings-icon" style="background: #8E8E93;">ℹ️</div>
+                    <div class="settings-label">Version</div>
+                    <div class="settings-value">1.0.0</div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-item" onclick="clearAllData()" style="color: #FF3B30;">
+                    <div class="settings-icon" style="background: #FF3B30;">🗑️</div>
+                    <div class="settings-label" style="color: #FF3B30;">Delete All Data</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
+        <button class="tab-item active" onclick="switchTab('home')">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label">Home</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('calendar')">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">Calendar</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('family')">
+            <span class="tab-icon">👥</span>
+            <span class="tab-label">Family</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('settings')">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">Settings</span>
+        </button>
+    </nav>
+
+    <!-- FAB -->
+    <button class="fab" onclick="showAddTask()" id="main-fab">+</button>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add Task</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // Data Model
+        const DataModel = {
+            categories: [],
+            items: [],
+            tasks: [],
+            logs: [],
+            members: [],
+            
+            init() {
+                this.load();
+                if (this.categories.length === 0) {
+                    this.seedData();
+                }
+            },
+            
+            load() {
+                try {
+                    this.categories = JSON.parse(localStorage.getItem('hk_categories')) || [];
+                    this.items = JSON.parse(localStorage.getItem('hk_items')) || [];
+                    this.tasks = JSON.parse(localStorage.getItem('hk_tasks')) || [];
+                    this.logs = JSON.parse(localStorage.getItem('hk_logs')) || [];
+                    this.members = JSON.parse(localStorage.getItem('hk_members')) || [];
+                } catch(e) {
+                    console.error('Error loading data', e);
+                }
+            },
+            
+            save() {
+                localStorage.setItem('hk_categories', JSON.stringify(this.categories));
+                localStorage.setItem('hk_items', JSON.stringify(this.items));
+                localStorage.setItem('hk_tasks', JSON.stringify(this.tasks));
+                localStorage.setItem('hk_logs', JSON.stringify(this.logs));
+                localStorage.setItem('hk_members', JSON.stringify(this.members));
+            },
+            
+            seedData() {
+                this.members = [
+                    { id: 'member_1', name: 'Me', initials: 'ME', color: '#007AFF', role: 'Admin' }
+                ];
+                
+                this.categories = [
+                    { id: 'cat_1', name: 'Home', icon: '🏠', color: '#FF9500', sortOrder: 0 },
+                    { id: 'cat_2', name: 'Auto', icon: '🚗', color: '#007AFF', sortOrder: 1 },
+                    { id: 'cat_3', name: 'Utilities', icon: '💡', color: '#34C759', sortOrder: 2 },
+                    { id: 'cat_4', name: 'Lawn & Garden', icon: '🌿', color: '#00C7BE', sortOrder: 3 }
+                ];
+                
+                this.items = [
+                    { id: 'item_1', categoryId: 'cat_1', name: 'HVAC System', description: 'Central air and heating', ownerIds: ['member_1'] },
+                    { id: 'item_2', categoryId: 'cat_2', name: 'Honda Civic 2020', description: 'Primary vehicle', ownerIds: ['member_1'] },
+                    { id: 'item_3', categoryId: 'cat_3', name: 'Water Heater', description: '50 gallon tank', ownerIds: ['member_1'] }
+                ];
+                
+                const today = new Date();
+                const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+                const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7);
+                
+                this.tasks = [
+                    { id: 'task_1', itemId: 'item_1', name: 'Replace air filter', status: 'not-started', dueDate: nextWeek.toISOString(), durationValue: 3, durationUnit: 'months', ownerIds: ['member_1'] },
+                    { id: 'task_2', itemId: 'item_2', name: 'Oil change', status: 'in-progress', dueDate: today.toISOString(), durationValue: 5000, durationUnit: 'miles', ownerIds: ['member_1'] },
+                    { id: 'task_3', itemId: 'item_3', name: 'Flush water heater', status: 'complete', dueDate: lastWeek.toISOString(), completedDate: lastWeek.toISOString(), durationValue: 1, durationUnit: 'years', ownerIds: ['member_1'] }
+                ];
+                
+                this.save();
+            },
+            
+            generateId(prefix) {
+                return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
+        };
+
+        // Utility Functions
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function formatDateLong(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        function getDaysUntil(dateStr) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const date = new Date(dateStr); date.setHours(0,0,0,0);
+            return Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+        }
+
+        function isOverdue(task) {
+            return getDaysUntil(task.dueDate) < 0 && task.status !== 'complete';
+        }
+
+        function isDueSoon(task) {
+            const days = getDaysUntil(task.dueDate);
+            return days >= 0 && days <= 7 && task.status !== 'complete';
+        }
+
+        // Tab Navigation
+        function switchTab(tab) {
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(`${tab}-page`).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            document.getElementById('main-fab').style.display = tab === 'home' ? 'flex' : 'none';
+            
+            if (tab === 'calendar') renderCalendar();
+            if (tab === 'family') renderFamily();
+        }
+
+        // Render Functions
+        function renderHome() {
+            renderStats();
+            renderCategories();
+            renderUpcomingTasks();
+        }
+
+        function renderStats() {
+            const tasks = DataModel.tasks;
+            document.getElementById('stat-total').textContent = tasks.length;
+            document.getElementById('stat-complete').textContent = tasks.filter(t => t.status === 'complete').length;
+            document.getElementById('stat-overdue').textContent = tasks.filter(t => isOverdue(t)).length;
+            document.getElementById('stat-upcoming').textContent = tasks.filter(t => isDueSoon(t)).length;
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories-list');
+            
+            if (DataModel.categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📁</div>
+                        <div class="empty-state-title">No Categories</div>
+                        <div class="empty-state-text">Add your first category to get started</div>
+                        <button class="btn btn-primary" onclick="showAddCategory()">Add Category</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = DataModel.categories.map(cat => {
+                const items = DataModel.items.filter(i => i.categoryId === cat.id);
+                const tasks = DataModel.tasks.filter(t => items.some(i => i.id === t.itemId));
+                const completed = tasks.filter(t => t.status === 'complete').length;
+                const progress = tasks.length > 0 ? (completed / tasks.length * 100) : 0;
+                
+                return `
+                    <div class="category-card animate-in" onclick="viewCategory('${cat.id}')">
+                        <div class="category-icon" style="background: ${cat.color}">${cat.icon}</div>
+                        <div class="category-info">
+                            <div class="category-name">${cat.name}</div>
+                            <div class="category-meta">${items.length} items • ${tasks.length} tasks</div>
+                        </div>
+                        ${tasks.length > 0 ? `
+                        <div class="category-progress">
+                            <div class="category-progress-text">${completed}/${tasks.length}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        <span class="category-chevron">›</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderUpcomingTasks() {
+            const container = document.getElementById('upcoming-tasks');
+            const tasks = DataModel.tasks
+                .filter(t => t.status !== 'complete')
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                .slice(0, 5);
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-title">All Caught Up!</div>
+                        <div class="empty-state-text">No upcoming maintenance tasks</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => renderTaskItem(task)).join('');
+        }
+
+        function renderTaskItem(task) {
+            const item = DataModel.items.find(i => i.id === task.itemId);
+            const statusClass = task.status;
+            const isTaskOverdue = isOverdue(task);
+            const isTaskDueSoon = isDueSoon(task);
+            
+            let badge = '';
+            if (isTaskOverdue) badge = '<span class="task-badge overdue">Overdue</span>';
+            else if (isTaskDueSoon) badge = '<span class="task-badge due-soon">Due Soon</span>';
+            else if (task.status === 'complete') badge = '<span class="task-badge complete">Complete</span>';
+            
+            const owners = (task.ownerIds || []).map(id => DataModel.members.find(m => m.id === id)).filter(Boolean);
+            const avatars = owners.length > 0 ? `
+                <div class="avatar-stack">
+                    ${owners.slice(0, 3).map(o => `<div class="avatar" style="background: ${o.color}">${o.initials}</div>`).join('')}
+                </div>
+            ` : '';
+            
+            return `
+                <div class="task-item" onclick="viewTask('${task.id}')">
+                    <div class="task-checkbox ${statusClass}" onclick="event.stopPropagation(); toggleTaskStatus('${task.id}')">
+                        ${task.status === 'complete' ? '✓' : ''}
+                    </div>
+                    <div class="task-info">
+                        <div class="task-name ${task.status === 'complete' ? 'complete' : ''}">${task.name}</div>
+                        <div class="task-meta">
+                            ${item ? item.name : ''} • ${formatDate(task.dueDate)}
+                            ${badge}
+                        </div>
+                    </div>
+                    ${avatars}
+                </div>
+            `;
+        }
+
+        function toggleTaskStatus(taskId) {
+            const task = DataModel.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const statuses = ['not-started', 'in-progress', 'complete'];
+            const currentIndex = statuses.indexOf(task.status);
+            task.status = statuses[(currentIndex + 1) % statuses.length];
+            
+            if (task.status === 'complete') {
+                task.completedDate = new Date().toISOString();
+            } else {
+                delete task.completedDate;
+            }
+            
+            DataModel.save();
+            renderHome();
+            showToast('Task updated!');
+        }
+
+        // Calendar Functions
+        let currentCalendarDate = new Date();
+        let selectedCalendarDate = new Date();
+
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            document.getElementById('calendar-month').textContent = 
+                new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const grid = document.getElementById('calendar-grid');
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - startDate.getDay());
+            
+            const today = new Date(); today.setHours(0,0,0,0);
+            
+            let html = '';
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const isOtherMonth = date.getMonth() !== month;
+                const isToday = date.getTime() === today.getTime();
+                const isSelected = date.toDateString() === selectedCalendarDate.toDateString();
+                
+                const dayTasks = DataModel.tasks.filter(t => {
+                    const taskDate = new Date(t.dueDate);
+                    return taskDate.toDateString() === date.toDateString();
+                });
+                
+                const dots = dayTasks.slice(0, 3).map(t => {
+                    const item = DataModel.items.find(i => i.id === t.itemId);
+                    const cat = item ? DataModel.categories.find(c => c.id === item.categoryId) : null;
+                    const color = t.status === 'complete' ? '#34C759' : (isOverdue(t) ? '#FF3B30' : (cat?.color || '#007AFF'));
+                    return `<div class="task-dot" style="background: ${color}"></div>`;
+                }).join('');
+                
+                html += `
+                    <div class="calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+                         onclick="selectDate('${date.toISOString()}')">
+                        ${date.getDate()}
+                        ${dots ? `<div class="task-dots">${dots}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            grid.innerHTML = html;
+            renderCalendarTasks();
+        }
+
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentCalendarDate = new Date();
+            selectedCalendarDate = new Date();
+            renderCalendar();
+        }
+
+        function selectDate(dateStr) {
+            selectedCalendarDate = new Date(dateStr);
+            renderCalendar();
+        }
+
+        function renderCalendarTasks() {
+            const tasks = DataModel.tasks.filter(t => {
+                const taskDate = new Date(t.dueDate);
+                return taskDate.toDateString() === selectedCalendarDate.toDateString();
+            });
+            
+            document.getElementById('selected-date-title').textContent = formatDateLong(selectedCalendarDate.toISOString());
+            
+            const container = document.getElementById('calendar-tasks');
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No tasks for this date</div></div>';
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => renderTaskItem(task)).join('');
+        }
+
+        // Family Functions
+        function renderFamily() {
+            const membersContainer = document.getElementById('family-members');
+            const distContainer = document.getElementById('task-distribution');
+            
+            if (DataModel.members.length === 0) {
+                membersContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-title">No Family Members</div>
+                        <div class="empty-state-text">Add family members to assign tasks</div>
+                        <button class="btn btn-primary" onclick="showAddMember()">Add Member</button>
+                    </div>
+                `;
+                distContainer.innerHTML = '';
+                return;
+            }
+            
+            membersContainer.innerHTML = DataModel.members.map(member => {
+                const taskCount = DataModel.tasks.filter(t => (t.ownerIds || []).includes(member.id)).length;
+                return `
+                    <div class="stat-card" style="text-align: center;">
+                        <div class="avatar" style="background: ${member.color}; width: 64px; height: 64px; font-size: 24px; margin: 0 auto 12px;">${member.initials}</div>
+                        <div class="category-name">${member.name}</div>
+                        <div class="category-meta">${member.role}</div>
+                        <div class="stat-value blue" style="font-size: 18px; margin-top: 8px;">${taskCount} tasks</div>
+                    </div>
+                `;
+            }).join('');
+            
+            distContainer.innerHTML = DataModel.members.map(member => {
+                const tasks = DataModel.tasks.filter(t => (t.ownerIds || []).includes(member.id));
+                const completed = tasks.filter(t => t.status === 'complete').length;
+                const percentage = tasks.length > 0 ? Math.round(completed / tasks.length * 100) : 0;
+                
+                return `
+                    <div class="task-item">
+                        <div class="avatar" style="background: ${member.color}">${member.initials}</div>
+                        <div class="task-info" style="flex: 1;">
+                            <div class="task-name">${member.name}</div>
+                            <div class="progress-bar" style="width: 100%; margin-top: 8px;">
+                                <div class="progress-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-value green" style="font-size: 16px;">${percentage}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Modal Functions
+        function showModal(title, content) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = content;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function showAddCategory() {
+            const icons = ['🏠', '🚗', '💡', '🌿', '🏊', '🔧', '🛠️', '🧹', '🌡️', '💧', '🔌', '🎨', '🪴', '🚿', '🔥', '❄️'];
+            const colors = ['#FF9500', '#007AFF', '#34C759', '#00C7BE', '#AF52DE', '#FF3B30', '#5856D6', '#FF2D55'];
+            
+            showModal('Add Category', `
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="cat-name" placeholder="Category name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Icon</label>
+                    <div class="icon-grid">
+                        ${icons.map((icon, i) => `<div class="icon-option ${i === 0 ? 'selected' : ''}" onclick="selectIcon(this, '${icon}')">${icon}</div>`).join('')}
+                    </div>
+                    <input type="hidden" id="cat-icon" value="${icons[0]}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <div class="color-grid">
+                        ${colors.map((color, i) => `<div class="color-option ${i === 0 ? 'selected' : ''}" style="background: ${color}" onclick="selectColor(this, '${color}')"></div>`).join('')}
+                    </div>
+                    <input type="hidden" id="cat-color" value="${colors[0]}">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveCategory()">Save Category</button>
+            `);
+        }
+
+        function selectIcon(el, icon) {
+            document.querySelectorAll('.icon-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('cat-icon').value = icon;
+        }
+
+        function selectColor(el, color) {
+            document.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('cat-color').value = color;
+        }
+
+        function saveCategory() {
+            const name = document.getElementById('cat-name').value.trim();
+            if (!name) { showToast('Please enter a name', 'error'); return; }
+            
+            DataModel.categories.push({
+                id: DataModel.generateId('cat'),
+                name,
+                icon: document.getElementById('cat-icon').value,
+                color: document.getElementById('cat-color').value,
+                sortOrder: DataModel.categories.length
+            });
+            
+            DataModel.save();
+            closeModal();
+            renderHome();
+            showToast('Category added!');
+        }
+
+        function showAddItem() {
+            if (DataModel.categories.length === 0) {
+                showToast('Please add a category first', 'error');
+                return;
+            }
+            
+            showModal('Add Item', `
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="item-name" placeholder="Item name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="item-desc" placeholder="Brand, model, notes...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="item-category">
+                        ${DataModel.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveItem()">Save Item</button>
+            `);
+        }
+
+        function saveItem() {
+            const name = document.getElementById('item-name').value.trim();
+            if (!name) { showToast('Please enter a name', 'error'); return; }
+            
+            DataModel.items.push({
+                id: DataModel.generateId('item'),
+                categoryId: document.getElementById('item-category').value,
+                name,
+                description: document.getElementById('item-desc').value.trim(),
+                ownerIds: DataModel.members.length > 0 ? [DataModel.members[0].id] : []
+            });
+            
+            DataModel.save();
+            closeModal();
+            renderHome();
+            showToast('Item added!');
+        }
+
+        function showAddTask() {
+            if (DataModel.items.length === 0) {
+                showToast('Please add an item first', 'error');
+                return;
+            }
+            
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            const dateStr = nextWeek.toISOString().split('T')[0];
+            
+            showModal('Add Task', `
+                <div class="form-group">
+                    <label class="form-label">Task Name</label>
+                    <input type="text" class="form-input" id="task-name" placeholder="Task name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Item</label>
+                    <select class="form-select" id="task-item">
+                        ${DataModel.items.map(i => {
+                            const cat = DataModel.categories.find(c => c.id === i.categoryId);
+                            return `<option value="${i.id}">${cat?.icon || ''} ${i.name}</option>`;
+                        }).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" class="form-input" id="task-due" value="${dateStr}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Frequency</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" class="form-input" id="task-freq-val" value="3" min="1" style="width: 80px;">
+                        <select class="form-select" id="task-freq-unit" style="flex: 1;">
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months" selected>Months</option>
+                            <option value="years">Years</option>
+                            <option value="miles">Miles</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveTask()">Save Task</button>
+            `);
+        }
+
+        function saveTask() {
+            const name = document.getElementById('task-name').value.trim();
+            if (!name) { showToast('Please enter a name', 'error'); return; }
+            
+            DataModel.tasks.push({
+                id: DataModel.generateId('task'),
+                itemId: document.getElementById('task-item').value,
+                name,
+                status: 'not-started',
+                dueDate: new Date(document.getElementById('task-due').value).toISOString(),
+                durationValue: parseInt(document.getElementById('task-freq-val').value),
+                durationUnit: document.getElementById('task-freq-unit').value,
+                ownerIds: DataModel.members.length > 0 ? [DataModel.members[0].id] : []
+            });
+            
+            DataModel.save();
+            closeModal();
+            renderHome();
+            showToast('Task added!');
+        }
+
+        function showAddLog() {
+            if (DataModel.tasks.length === 0) {
+                showToast('Please add a task first', 'error');
+                return;
+            }
+            
+            showModal('Add Log Entry', `
+                <div class="form-group">
+                    <label class="form-label">Task</label>
+                    <select class="form-select" id="log-task">
+                        ${DataModel.tasks.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-input" id="log-content" rows="4" placeholder="Add notes, links, etc..."></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveLog()">Save Log</button>
+            `);
+        }
+
+        function saveLog() {
+            const content = document.getElementById('log-content').value.trim();
+            if (!content) { showToast('Please enter notes', 'error'); return; }
+            
+            DataModel.logs.push({
+                id: DataModel.generateId('log'),
+                taskId: document.getElementById('log-task').value,
+                content,
+                authorId: DataModel.members.length > 0 ? DataModel.members[0].id : null,
+                createdAt: new Date().toISOString()
+            });
+            
+            DataModel.save();
+            closeModal();
+            showToast('Log entry added!');
+        }
+
+        function showAddMember() {
+            const colors = ['#007AFF', '#AF52DE', '#34C759', '#FF9500', '#FF3B30', '#5856D6', '#00C7BE', '#FF2D55'];
+            
+            showModal('Add Family Member', `
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="member-name" placeholder="Full name" oninput="autoGenerateInitials()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Initials</label>
+                    <input type="text" class="form-input" id="member-initials" placeholder="AB" maxlength="2" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <div class="color-grid">
+                        ${colors.map((color, i) => `<div class="color-option ${i === 0 ? 'selected' : ''}" style="background: ${color}" onclick="selectMemberColor(this, '${color}')"></div>`).join('')}
+                    </div>
+                    <input type="hidden" id="member-color" value="${colors[0]}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" id="member-role">
+                        <option value="Member">Member</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveMember()">Save Member</button>
+            `);
+        }
+
+        function autoGenerateInitials() {
+            const name = document.getElementById('member-name').value.trim();
+            const words = name.split(' ').filter(w => w);
+            let initials = '';
+            if (words.length >= 2) {
+                initials = (words[0][0] + words[1][0]).toUpperCase();
+            } else if (words.length === 1) {
+                initials = words[0].substring(0, 2).toUpperCase();
+            }
+            document.getElementById('member-initials').value = initials;
+        }
+
+        function selectMemberColor(el, color) {
+            document.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('member-color').value = color;
+        }
+
+        function saveMember() {
+            const name = document.getElementById('member-name').value.trim();
+            const initials = document.getElementById('member-initials').value.trim().toUpperCase();
+            if (!name || !initials) { showToast('Please fill all fields', 'error'); return; }
+            
+            DataModel.members.push({
+                id: DataModel.generateId('member'),
+                name,
+                initials,
+                color: document.getElementById('member-color').value,
+                role: document.getElementById('member-role').value
+            });
+            
+            DataModel.save();
+            closeModal();
+            renderFamily();
+            showToast('Member added!');
+        }
+
+        // Detail Views (simplified)
+        function viewCategory(id) {
+            const cat = DataModel.categories.find(c => c.id === id);
+            if (!cat) return;
+            
+            const items = DataModel.items.filter(i => i.categoryId === id);
+            
+            showModal(cat.name, `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="category-icon" style="background: ${cat.color}; width: 64px; height: 64px; font-size: 32px; margin: 0 auto 12px; border-radius: 16px;">${cat.icon}</div>
+                    <div class="stat-value">${items.length}</div>
+                    <div class="stat-label">Items</div>
+                </div>
+                <div class="section-header">
+                    <h3 class="section-title">Items</h3>
+                    <button class="section-action" onclick="closeModal(); showAddItem();">Add</button>
+                </div>
+                ${items.length === 0 ? '<div class="empty-state-text">No items in this category</div>' : items.map(item => {
+                    const tasks = DataModel.tasks.filter(t => t.itemId === item.id);
+                    return `
+                        <div class="category-card" style="margin: 8px 0;" onclick="viewItem('${item.id}')">
+                            <div class="category-info">
+                                <div class="category-name">${item.name}</div>
+                                <div class="category-meta">${tasks.length} tasks</div>
+                            </div>
+                            <span class="category-chevron">›</span>
+                        </div>
+                    `;
+                }).join('')}
+            `);
+        }
+
+        function viewItem(id) {
+            const item = DataModel.items.find(i => i.id === id);
+            if (!item) return;
+            
+            const cat = DataModel.categories.find(c => c.id === item.categoryId);
+            const tasks = DataModel.tasks.filter(t => t.itemId === id);
+            
+            showModal(item.name, `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    ${cat ? `<div class="category-icon" style="background: ${cat.color}; width: 48px; height: 48px; font-size: 24px; margin: 0 auto 12px; border-radius: 12px;">${cat.icon}</div>` : ''}
+                    ${item.description ? `<div class="category-meta">${item.description}</div>` : ''}
+                </div>
+                <div class="section-header">
+                    <h3 class="section-title">Tasks</h3>
+                    <button class="section-action" onclick="closeModal(); showAddTask();">Add</button>
+                </div>
+                <div class="task-list">
+                    ${tasks.length === 0 ? '<div class="empty-state-text" style="padding: 20px;">No tasks</div>' : tasks.map(task => renderTaskItem(task)).join('')}
+                </div>
+            `);
+        }
+
+        function viewTask(id) {
+            const task = DataModel.tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            const item = DataModel.items.find(i => i.id === task.itemId);
+            const logs = DataModel.logs.filter(l => l.taskId === id).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            const statusOptions = ['not-started', 'in-progress', 'complete'];
+            const statusLabels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'complete': 'Complete' };
+            
+            showModal(task.name, `
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" onchange="updateTaskStatus('${task.id}', this.value)">
+                        ${statusOptions.map(s => `<option value="${s}" ${task.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="settings-section" style="margin: 20px 0;">
+                    <div class="settings-item">
+                        <div class="settings-label">Item</div>
+                        <div class="settings-value">${item?.name || 'Unknown'}</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Due Date</div>
+                        <div class="settings-value">${formatDateLong(task.dueDate)}</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Frequency</div>
+                        <div class="settings-value">Every ${task.durationValue} ${task.durationUnit}</div>
+                    </div>
+                </div>
+                <div class="section-header">
+                    <h3 class="section-title">Activity Log</h3>
+                    <button class="section-action" onclick="closeModal(); showAddLog();">Add</button>
+                </div>
+                ${logs.length === 0 ? '<div class="empty-state-text">No log entries</div>' : logs.map(log => {
+                    const author = DataModel.members.find(m => m.id === log.authorId);
+                    return `
+                        <div style="padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span class="category-meta">${formatDate(log.createdAt)}</span>
+                                ${author ? `<div class="avatar" style="background: ${author.color}; width: 20px; height: 20px; font-size: 8px;">${author.initials}</div>` : ''}
+                            </div>
+                            <div style="font-size: 14px;">${log.content}</div>
+                        </div>
+                    `;
+                }).join('')}
+            `);
+        }
+
+        function updateTaskStatus(id, status) {
+            const task = DataModel.tasks.find(t => t.id === id);
+            if (task) {
+                task.status = status;
+                if (status === 'complete') {
+                    task.completedDate = new Date().toISOString();
+                } else {
+                    delete task.completedDate;
+                }
+                DataModel.save();
+                renderHome();
+                showToast('Task updated!');
+            }
+        }
+
+        // Export/Import
+        function exportData() {
+            let csv = 'Type,Name,Category,Item,Status,Due Date,Frequency\n';
+            
+            DataModel.categories.forEach(cat => {
+                csv += `Category,"${cat.name}",,,,,"${cat.icon}"\n`;
+                
+                const items = DataModel.items.filter(i => i.categoryId === cat.id);
+                items.forEach(item => {
+                    csv += `Item,"${item.name}","${cat.name}",,,,"${item.description || ''}"\n`;
+                    
+                    const tasks = DataModel.tasks.filter(t => t.itemId === item.id);
+                    tasks.forEach(task => {
+                        csv += `Task,"${task.name}","${cat.name}","${item.name}","${task.status}","${formatDate(task.dueDate)}","${task.durationValue} ${task.durationUnit}"\n`;
+                    });
+                });
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `HomeKeep_Export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Data exported!');
+        }
+
+        function importData() {
+            showToast('Import feature coming soon');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete all data? This cannot be undone.')) {
+                localStorage.clear();
+                DataModel.categories = [];
+                DataModel.items = [];
+                DataModel.tasks = [];
+                DataModel.logs = [];
+                DataModel.members = [];
+                DataModel.seedData();
+                renderHome();
+                showToast('All data cleared');
+            }
+        }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Settings Toggle
+        function toggleSetting(el) {
+            el.classList.toggle('active');
+        }
+
+        // Search (simplified)
+        function showSearch() {
+            showModal('Search', `
+                <div class="form-group">
+                    <input type="text" class="form-input" id="search-input" placeholder="Search tasks, items..." oninput="performSearch(this.value)">
+                </div>
+                <div id="search-results"></div>
+            `);
+        }
+
+        function performSearch(query) {
+            const results = document.getElementById('search-results');
+            if (query.length < 2) {
+                results.innerHTML = '';
+                return;
+            }
+            
+            const q = query.toLowerCase();
+            const matchedTasks = DataModel.tasks.filter(t => t.name.toLowerCase().includes(q));
+            const matchedItems = DataModel.items.filter(i => i.name.toLowerCase().includes(q));
+            const matchedCategories = DataModel.categories.filter(c => c.name.toLowerCase().includes(q));
+            
+            let html = '';
+            
+            if (matchedCategories.length > 0) {
+                html += '<div class="form-label">Categories</div>';
+                html += matchedCategories.map(c => `
+                    <div class="category-card" onclick="closeModal(); viewCategory('${c.id}')">
+                        <div class="category-icon" style="background: ${c.color}">${c.icon}</div>
+                        <div class="category-name">${c.name}</div>
+                    </div>
+                `).join('');
+            }
+            
+            if (matchedItems.length > 0) {
+                html += '<div class="form-label" style="margin-top: 16px;">Items</div>';
+                html += matchedItems.map(i => `
+                    <div class="category-card" onclick="closeModal(); viewItem('${i.id}')">
+                        <div class="category-name">${i.name}</div>
+                    </div>
+                `).join('');
+            }
+            
+            if (matchedTasks.length > 0) {
+                html += '<div class="form-label" style="margin-top: 16px;">Tasks</div>';
+                html += '<div class="task-list">' + matchedTasks.map(t => renderTaskItem(t)).join('') + '</div>';
+            }
+            
+            if (!html) {
+                html = '<div class="empty-state-text">No results found</div>';
+            }
+            
+            results.innerHTML = html;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            DataModel.init();
+            renderHome();
+            
+            // Auto-save every 30 seconds
+            setInterval(() => DataModel.save(), 30000);
+        });
+
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
